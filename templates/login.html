@@ -32,13 +32,15 @@
   <table id="content_tbl">
     <tr>
       <td id="content_col" valign="top">
-        <form action="{{ url_for('login')}}" method="post">
-          <p>Enter username:
-          <p><input type=text name=username>
-            <p><input type=submit value=Login>
-            </form>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
+        <p>
+          Would you like to login using your GitHub account?<br>
+          <a href="https://github.com/login/oauth/authorize?
+          scope=user:email&client_id={{ client_id }}&state={{ state }}">
+            Click here
+          </a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
