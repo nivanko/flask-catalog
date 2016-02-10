@@ -5,6 +5,14 @@ from sqlalchemy import create_engine
 
 Base = declarative_base()
 
+class User(Base):
+    # table name set to 'users' to avoid confict with postgres function 'user'
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key = True)
+    username = Column(String(250), nullable = False, unique = True)
+    fullname = Column(String(250), nullable = False)
+
+
 class Category(Base):
     """docstring for """
     __tablename__ = 'category'
@@ -18,9 +26,10 @@ class Item(Base):
     name = Column(String(50), nullable = False)
     description = Column(String(250))
     picture = Column(String(50))
-    creator = Column(String(50), nullable = False)
     category_id = Column(Integer, ForeignKey('category.id'))
     category = relationship(Category)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    user = relationship(User)
 
 
 # Create DB schema
@@ -55,10 +64,18 @@ if __name__ == '__main__':
     category11 = Category(name = "Safety")
     session.add(category11)
 
-    # item = Item(name = "", category_id = )
-    item1 = Item(name = "Hiking Packs", category_id = 1, creator = "nikolay.i@didww.com")
+    user1 = User(username = "nivanko", fullname = "Nikolay Ivanko")
+    session.add(user1)
+
+    user1 = session.query(User).filter_by(username = "nivanko").one()
+
+    item1 = Item(name = "Hiking Packs", category_id = 1, user_id = user1.id)
     session.add(item1)
-    item2 = Item(name = "Day Packs", category_id = 1, picture = "daypack.jpg", description = "A daypack is a smaller, frameless backpack that can hold enough contents for a day hike, or a day's worth of other activities.", creator = "nikolay.i@didww.com")
+    item2 = Item(name = "Day Packs", category_id = 1, picture = "daypack.jpg",
+                description = ("A daypack is a smaller, frameless backpack "
+                "that can hold enough contents for a day hike, or a day's "
+                "worth of other activities."),
+                user_id = user1.id)
     session.add(item2)
 
     session.commit()
