@@ -1,4 +1,4 @@
-import httplib2
+#import httplib2
 import json
 import os
 import random
@@ -64,7 +64,8 @@ def show_image(filename):
 # Add item
 @app.route('/catalog/add', methods=['GET', 'POST'])
 def add_item():
-    if IS_LOGGED_IN:
+    if 'username' in login_session:
+#    if IS_LOGGED_IN:
         if request.method == 'GET':
             categories = db_session.query(Category).all()
             return render_template('add.html', categories = categories,
@@ -92,7 +93,8 @@ def add_item():
 @app.route('/catalog/<category_name>/<item_name>/edit',
             methods=['GET', 'POST'])
 def edit_item(category_name, item_name):
-    if IS_LOGGED_IN:
+    if 'username' in login_session:
+#    if IS_LOGGED_IN:
         if request.method == 'GET':
             categories = db_session.query(Category).all()
             category = db_session.query(Category).\
@@ -145,7 +147,6 @@ def github_login():
     # Here we will check response & handle possible errors
     state = login_session['state']
     code = request.args.get('code')
-    # Stub end
     # Get access token
     url = 'https://github.com/login/oauth/access_token'
     headers = {'Accept': 'application/json'}
@@ -154,6 +155,7 @@ def github_login():
     result = requests.post(url, data = params, headers = headers)
     data = result.json()
     login_session['access_token'] = data['access_token']
+    # Stub end
     # Get user info
     url = 'https://api.github.com/user'
     token_param = 'token %s' % login_session['access_token']
@@ -163,8 +165,7 @@ def github_login():
     login_session['username'] = data['login']
     login_session['fullname'] = data['name']
     #
-    print login_session['username']
-    print login_session['fullname']
+    print login_session
     #
     IS_LOGGED_IN = True
     return redirect(url_for('list_categories'))
