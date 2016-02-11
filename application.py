@@ -65,7 +65,6 @@ def show_image(filename):
 @app.route('/catalog/add', methods=['GET', 'POST'])
 def add_item():
     if 'username' in login_session:
-#    if IS_LOGGED_IN:
         if request.method == 'GET':
             categories = db_session.query(Category).all()
             return render_template('add.html', categories = categories,
@@ -81,7 +80,7 @@ def add_item():
                             description = request.form['description'],
                             picture = filename,
                             category_id = request.form['category_id'],
-                            creator = login_session['username'])
+                            user_id = get_user_id(login_session['username']))
             db_session.add(new_item)
             db_session.commit()
             return redirect(url_for('list_categories'))
@@ -94,7 +93,6 @@ def add_item():
             methods=['GET', 'POST'])
 def edit_item(category_name, item_name):
     if 'username' in login_session:
-#    if IS_LOGGED_IN:
         if request.method == 'GET':
             categories = db_session.query(Category).all()
             category = db_session.query(Category).\
@@ -195,7 +193,14 @@ def logout():
     return redirect(url_for('list_categories'))
 
 
+# User Helper functions
+def get_user_id(username):
+    user = session.query(User).filter_by(username = username).one()
+    return user.id
+
+
+# Main routine
 if __name__ == '__main__':
-    app.secret_key = 'cgvSdvbFudzOunQFaklmHA=='  # super_secret_key
+    app.secret_key = 'cgvSdvbFudzOunQFaklmHA=='  # super secret key
     app.debug = True
     app.run(host='0.0.0.0', port=8000)
