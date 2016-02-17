@@ -10,7 +10,7 @@ from flask import session as login_session
 from werkzeug import secure_filename
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
-from setup import Base, Category, Item
+from setup import Base, Category, Item, User
 
 # Define globals
 IS_LOGGED_IN = False
@@ -121,6 +121,24 @@ def edit_item(category_name, item_name):
         return redirect(url_for('login'))
 
 
+# Delete item
+@app.route('/catalog/<category_name>/<item_name>/delete',
+            methods=['GET', 'POST'])
+def delete_item(item_name, category_name):
+    if 'username' in login_session:
+        if request.method == 'GET':
+            item = db_session.query(Item).filter_by(name = item_name).one()
+            return render_template('delete.html', item = item,
+                                    is_login = IS_LOGGED_IN)
+        elif request.method == 'POST':
+            item = db_session.query(Item).filter_by(name = item_name).one()
+            db_session.delete(item)
+            db_session.commit()
+            return redirect(url_for('list_categories'))
+    else:
+        return redirect(url_for('login'))
+
+
 # Show login page
 @app.route('/login')
 def login():
@@ -195,7 +213,7 @@ def logout():
 
 # User Helper functions
 def get_user_id(username):
-    user = session.query(User).filter_by(username = username).one()
+    user = db_session.query(User).filter_by(username = username).one()
     return user.id
 
 
