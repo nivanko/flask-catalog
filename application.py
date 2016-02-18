@@ -1,4 +1,3 @@
-#import httplib2
 import json
 import os
 import random
@@ -37,7 +36,7 @@ def list_categories():
                             items = last_items, is_login = IS_LOGGED_IN)
 
 
-# View/add items in category
+# List items in category
 @app.route('/catalog/<category_name>')
 def list_items(category_name):
     categories = db_session.query(Category).all()
@@ -48,7 +47,7 @@ def list_items(category_name):
                             items = items, is_login = IS_LOGGED_IN)
 
 
-# View/edit item
+# View item
 @app.route('/catalog/<category_name>/<item_name>')
 def show_item(category_name, item_name):
     item = db_session.query(Item).filter_by(name = item_name).one()
@@ -71,13 +70,21 @@ def add_item():
                                     is_login = IS_LOGGED_IN)
         elif request.method == 'POST':
             image = request.files['image']
+            # Save image if chosen
             if image:
                 filename = secure_filename(image.filename)
                 image.save(os.path.join(IMAGES_DIRECTORY, filename))
             else:
-                filename = ''
-            new_item = Item(name = request.form['name'],
-                            description = request.form['description'],
+                filename = None
+            # Description validation
+            if request.form['description'] == '':
+                description = None
+            else:
+                description = request.form['description']
+            # Name must be non-empty
+            if request.form['name'] != '':
+                new_item = Item(name = request.form['name'],
+                            description = description,
                             picture = filename,
                             category_id = request.form['category_id'],
                             user_id = get_user_id(login_session['username']))
@@ -103,16 +110,21 @@ def edit_item(category_name, item_name):
                                     item = item,
                                     is_login = IS_LOGGED_IN)
         elif request.method == 'POST':
+            item = db_session.query(Item).filter_by(name = item_name).one()
             image = request.files['image']
+            # Save updated image
             if image:
                 filename = secure_filename(image.filename)
                 image.save(os.path.join(IMAGES_DIRECTORY, filename))
+                item.picture = filename
+            # Name must be non-empty
+            if request.form['name'] != '':
+                item.name = request.form['name']
+            # Description validation
+            if request.form['description'] == '':
+                item.description = None
             else:
-                filename = ''
-            item = db_session.query(Item).filter_by(name = item_name).one()
-            item.name = request.form['name']
-            item.description = request.form['description']
-            item.picture = filename
+                item.description = request.form['description']
             item.category_id = request.form['category_id']
             db_session.add(item)
             db_session.commit()
