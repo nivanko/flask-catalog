@@ -36,22 +36,22 @@
         enctype=multipart/form-data>
         <h2 style="color: Black">Add Item</h2>
         <p>Title:
-          <p><input type=text maxlength="50" name="name">
-            <p>Description:
-              <p><input type=text maxlength="250" name="description">
-                <p>Category:
-                  <p><select name="category_id" size="1">
-                    {% for c in categories %}
+        <p><input type=text maxlength="50" name="name">
+        <p>Description:
+        <p><input type=text maxlength="250" name="description">
+        <p>Category:
+          <p><select name="category_id" size="1">
+            {% for c in categories %}
 
-                    <option value="{{ c.id }}">{{ c.name }}</option>
+            <option value="{{ c.id }}">{{ c.name }}</option>
 
-                    {% endfor %}
-                  </select>
-                  <p><input type=file name=image>
-                    <p><input type=submit value="Save">
-                    </form>
-                  </td>
-                </tr>
-              </table>
-            </body>
-            </html>
+            {% endfor %}
+          </select>
+          <p><input type=file name=image>
+          <p><input type=submit value="Save">
+        </form>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -41,29 +41,36 @@
         <p>Title:
           <p><input type=text maxlength="50" name="name"
             value="{{ item.name }}">
-            <p>Description:
-              <p><input type=text maxlength="250" name="description"
-                value="{{ item.description }}">
-                <p>Category:
-                  <p><select name="category_id" size="1">
-                    {% for c in categories %}
+        <p>Description:
+          <p><input type=text maxlength="250" name="description"
+            value="{{ item.description }}">
+        <p>Category:
+              <p><select name="category_id" size="1">
+                {% for c in categories %}
 
-                    <option value="{{ c.id }}"
-                    {% if c.id == category_id %}
-                    selected="selected"
-                    {% endif %}
-                    >
-                    {{ c.name }}
-                  </option>
+                <option value="{{ c.id }}"
+                {% if c.id == category_id %}
+                selected="selected"
+                {% endif %}
+                >
+                {{ c.name }}
+              </option>
 
-                  {% endfor %}
-                </select>
-                <p>Filename: {{ item.picture }}
-                  <p><input type=file name=image>
-                    <p><input type=submit value="Save">
-                    </form>
-                  </td>
-                </tr>
-              </table>
-            </body>
-            </html>
+              {% endfor %}
+            </select>
+        <p>Image:
+        {% if item.picture == None %}
+        <p><img src="{{ url_for('static', filename = 'no-image-available.png') }}"
+        alt="No Image" style="width:100px;height:100px;">
+        {% else %}
+        <p><img src="{{ url_for('show_image', filename = item.picture) }}"
+        alt="Item Image" style="width:auto;height:100px;">
+        {% endif %}
+        <p><input type=file name=image value="Select new image">
+        <p><input type=submit value="Save">
+        </form>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
