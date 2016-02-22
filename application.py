@@ -173,10 +173,16 @@ def github_login():
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    # Stub begin
-    # Here we will check response & handle possible errors
     state = login_session['state']
     code = request.args.get('code')
+    # Check errors for the authorization request
+    error = request.args.get('error')
+    print "Authorization request error is: %s" % error
+    if error is not None:
+        response = make_response(json.dumps(
+                    request.args.get('error_description')), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
     # Get access token
     url = 'https://github.com/login/oauth/access_token'
     headers = {'Accept': 'application/json'}
@@ -184,8 +190,15 @@ def github_login():
                 'code' : code, 'state' : state }
     result = requests.post(url, data = params, headers = headers)
     data = result.json()
+    # Check errors for the access token request
+    error = data.get('error')
+    print "Access token request error is: %s" % error
+    if error is not None:
+        response = make_response(json.dumps(
+                    data.get('error_description')), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
     login_session['access_token'] = data['access_token']
-    # Stub end
     # Get user info
     url = 'https://api.github.com/user'
     token_param = 'token %s' % login_session['access_token']
@@ -195,7 +208,7 @@ def github_login():
     login_session['username'] = data['login']
     login_session['fullname'] = data['name']
     #
-    print login_session
+    print "User logged in: %s" % login_session.get('username')
     #
     IS_LOGGED_IN = True
     return redirect(url_for('list_categories'))
@@ -209,17 +222,19 @@ def logout():
     url = 'https://api.github.com/applications/%s/tokens/%s' % (
             CLIENT_ID, login_session['access_token'])
     result = requests.delete(url, auth=(CLIENT_ID, CLIENT_SECRET))
-    # Stub begin
-    print result.headers
-    print result.text
-    # Stub end
-    # remove the user data from the session if its there
+    # Check result
+    # if result.headers['status'] != "204 No Content":
+    #     response = make_response(
+    #                 json.dumps("Error destroying user session"), 401)
+    #     response.headers['Content-Type'] = 'application/json'
+    #     return response
+    # Remove the user data from the session if its there
     login_session.pop('access_token', None)
     login_session.pop('state', None)
     login_session.pop('username', None)
     login_session.pop('fullname', None)
     #
-    print login_session
+    print "User logged in: %s" % login_session.get('username')
     #
     IS_LOGGED_IN = False
     return redirect(url_for('list_categories'))
