@@ -144,6 +144,8 @@ def delete_item(item_name, category_name):
                                     is_login = IS_LOGGED_IN)
         elif request.method == 'POST':
             item = db_session.query(Item).filter_by(name = item_name).one()
+            # Delete image file
+            os.remove(os.path.join(IMAGES_DIRECTORY, item.picture))
             db_session.delete(item)
             db_session.commit()
             return redirect(url_for('list_categories'))
