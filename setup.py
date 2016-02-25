@@ -2,6 +2,12 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
+import os
+import shutil
+
+# Define globals
+IMAGES_DIRECTORY = 'images'
+SAMPLES_DIRECTORY = 'sample_data'
 
 Base = declarative_base()
 
@@ -95,6 +101,9 @@ if __name__ == '__main__':
                 "that can hold enough contents for a day hike, or a day's "
                 "worth of other activities."),
                 user_id = user1.id)
-    session.add(item2)
+    # Put image file to its place
+    shutil.copy(os.path.join(SAMPLES_DIRECTORY, "daypack.jpg"),
+                IMAGES_DIRECTORY)
 
+    session.add(item2)
     session.commit()

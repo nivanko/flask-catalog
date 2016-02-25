@@ -9,11 +9,10 @@ from flask import session as login_session
 from werkzeug import secure_filename
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
-from setup import Base, Category, Item, User
+from setup import Base, Category, Item, User, IMAGES_DIRECTORY
 
 # Define globals
 IS_LOGGED_IN = False
-IMAGES_DIRECTORY = 'images'
 CLIENT_ID = '88143cc4d646e722384a'
 CLIENT_SECRET = '896cbafa5d0ebed1a62c17502ef806e7a911a319'
 
