@@ -26,6 +26,37 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 db_session = DBSession()
 
+# JSON API endpoint
+@app.route('/catalog.json')
+def catalog_json():
+    categories = db_session.query(Category).all()
+    list_of_categories = []
+    for c in categories:
+        category_with_items = c.serialize
+        items = db_session.query(Item).filter_by(category_id = c.id).all()
+        if len(items) > 0:
+            category_with_items['Item'] = [i.serialize for i in items]
+        list_of_categories.append(category_with_items)
+    return jsonify(Category=list_of_categories)
+
+
+# XML API endpoint
+@app.route('/catalog.xml')
+def catalog_xml():
+    categories = db_session.query(Category).all()
+    list_of_categories = []
+    for c in categories:
+        category_with_items = c.serialize
+        items = db_session.query(Item).filter_by(category_id = c.id).all()
+        if len(items) > 0:
+            category_with_items['Item'] = [i.serialize for i in items]
+        list_of_categories.append(category_with_items)
+    xml_page = render_template('catalog.xml', categories = list_of_categories)
+    response = make_response(xml_page)
+    response.headers["Content-Type"] = "application/xml"
+    return response
+
+
 # Home page
 @app.route('/')
 @app.route('/catalog')

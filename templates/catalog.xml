@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Catalog with no DTD -->
+<Catalog>
+  {% for c in categories %}
+  <Category ID="{{ c.id }}">
+    <Name>{{ c.name }}</Name>
+    {% if c.Item %}
+    {% for i in c.Item %}
+    <Item ID="{{ i.id }}">
+      <Title>{{ i.title }}</Title>
+      <Description>
+        {{ i.description }}
+      </Description>
+      {% if i.picture %}
+      <Picture>
+        {{ url_for('show_image', _external = True, filename = i.picture) }}
+      </Picture>
+      {% endif %}
+    </Item>
+    {% endfor %}
+    {% endif %}
+  </Category>
+  {% endfor %}
+</Catalog>
