@@ -31,11 +31,21 @@ def catalog_json():
     categories = db_session.query(Category).all()
     list_of_categories = []
     for c in categories:
-        category_with_items = c.serialize
+        category = c.serialize
         items = db_session.query(Item).filter_by(category_id = c.id).all()
         if len(items) > 0:
-            category_with_items['Item'] = [i.serialize for i in items]
-        list_of_categories.append(category_with_items)
+            category['Item'] = []
+            for i in items:
+                item = i.serialize
+                if item.get('description') is None:
+                    item.pop('description')
+                if item.get('picture') is not None:
+                    item['picture'] = url_for('show_image', _external = True,
+                                        filename = item['picture'])
+                else:
+                    item.pop('picture')
+                category['Item'].append(item)
+        list_of_categories.append(category)
     return jsonify(Category=list_of_categories)
 
 
@@ -45,11 +55,11 @@ def catalog_xml():
     categories = db_session.query(Category).all()
     list_of_categories = []
     for c in categories:
-        category_with_items = c.serialize
+        category = c.serialize
         items = db_session.query(Item).filter_by(category_id = c.id).all()
         if len(items) > 0:
-            category_with_items['Item'] = [i.serialize for i in items]
-        list_of_categories.append(category_with_items)
+            category['Item'] = [i.serialize for i in items]
+        list_of_categories.append(category)
     xml_page = render_template('catalog.xml', categories = list_of_categories)
     response = make_response(xml_page)
     response.headers["Content-Type"] = "application/xml"
