@@ -11,8 +11,7 @@ from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from setup import Base, Category, Item, User, IMAGES_DIRECTORY
 
-# Define globals
-IS_LOGGED_IN = False
+# GitHub Application credentials
 CLIENT_ID = '88143cc4d646e722384a'
 CLIENT_SECRET = '896cbafa5d0ebed1a62c17502ef806e7a911a319'
 
@@ -73,7 +72,8 @@ def list_categories():
     categories = db_session.query(Category).all()
     last_items = db_session.query(Item).order_by(desc(Item.id)).limit(10)
     return render_template('categories.html', categories = categories,
-                            items = last_items, is_login = IS_LOGGED_IN)
+                            items = last_items,
+                            login = login_session.get('username'))
 
 
 # List items in category
@@ -84,14 +84,16 @@ def list_items(category_name):
     items = db_session.query(Item).filter_by(category_id = category.id).all()
     return render_template('items.html', categories = categories,
                             name = category.name, count = len(items),
-                            items = items, is_login = IS_LOGGED_IN)
+                            items = items,
+                            login = login_session.get('username'))
 
 
 # View item
 @app.route('/catalog/<category_name>/<item_name>')
 def show_item(category_name, item_name):
     item = db_session.query(Item).filter_by(name = item_name).one()
-    return render_template('show.html', item = item, is_login = IS_LOGGED_IN)
+    return render_template('show.html', item = item,
+                            login = login_session.get('username'))
 
 
 # Show item image
@@ -107,7 +109,7 @@ def add_item():
         if request.method == 'GET':
             categories = db_session.query(Category).all()
             return render_template('add.html', categories = categories,
-                                    is_login = IS_LOGGED_IN)
+                                    login = login_session.get('username'))
         elif request.method == 'POST':
             image = request.files['image']
             # Save image if chosen
@@ -148,7 +150,7 @@ def edit_item(category_name, item_name):
             return render_template('edit.html', categories = categories,
                                     category_id = category.id,
                                     item = item,
-                                    is_login = IS_LOGGED_IN)
+                                    login = login_session.get('username'))
         elif request.method == 'POST':
             item = db_session.query(Item).filter_by(name = item_name).one()
             image = request.files['image']
@@ -181,7 +183,7 @@ def delete_item(item_name, category_name):
         if request.method == 'GET':
             item = db_session.query(Item).filter_by(name = item_name).one()
             return render_template('delete.html', item = item,
-                                    is_login = IS_LOGGED_IN)
+                                    login = login_session.get('username'))
         elif request.method == 'POST':
             item = db_session.query(Item).filter_by(name = item_name).one()
             # Delete image file
@@ -196,19 +198,16 @@ def delete_item(item_name, category_name):
 # Show login page
 @app.route('/login')
 def login():
-    global IS_LOGGED_IN
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                 for x in xrange(32))
     login_session['state'] = state
     return render_template('login.html', client_id = CLIENT_ID, state = state,
-                            is_login = IS_LOGGED_IN)
+                            login = login_session.get('username'))
 
 
 # Process GitHub login
 @app.route('/glogin')
 def github_login():
-    global IS_LOGGED_IN
-    #
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
@@ -250,14 +249,12 @@ def github_login():
     #
     print "User logged in: %s" % login_session.get('username')
     #
-    IS_LOGGED_IN = True
     return redirect(url_for('list_categories'))
 
 
 # Log user out
 @app.route('/logout')
 def logout():
-    global IS_LOGGED_IN
     # Delete access token
     url = 'https://api.github.com/applications/%s/tokens/%s' % (
             CLIENT_ID, login_session['access_token'])
@@ -276,7 +273,6 @@ def logout():
     #
     print "User logged in: %s" % login_session.get('username')
     #
-    IS_LOGGED_IN = False
     return redirect(url_for('list_categories'))
 
 
