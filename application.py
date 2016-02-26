@@ -114,7 +114,7 @@ def add_item():
             image = request.files['image']
             # Save image if chosen
             if image:
-                filename = secure_filename(image.filename)
+                filename = secure_filename(image.filename).lower()
                 image.save(os.path.join(IMAGES_DIRECTORY, filename))
             else:
                 filename = None
@@ -156,7 +156,7 @@ def edit_item(category_name, item_name):
             image = request.files['image']
             # Save updated image
             if image:
-                filename = secure_filename(image.filename)
+                filename = secure_filename(image.filename).lower()
                 image.save(os.path.join(IMAGES_DIRECTORY, filename))
                 item.picture = filename
             # Name must be non-empty
