@@ -67,7 +67,7 @@ def catalog_xml():
 
 # Home page
 @app.route('/')
-@app.route('/catalog')
+@app.route('/catalog/')
 def list_categories():
     categories = db_session.query(Category).all()
     last_items = db_session.query(Item).order_by(desc(Item.id)).limit(10)
@@ -170,7 +170,10 @@ def edit_item(category_name, item_name):
             item.category_id = request.form['category_id']
             db_session.add(item)
             db_session.commit()
-            return redirect(url_for('list_categories'))
+            category = db_session.query(Category).\
+                        filter_by(id = request.form['category_id']).one()
+            return redirect(url_for('list_items',
+                                    category_name = category.name))
     else:
         return redirect(url_for('login'))
 
