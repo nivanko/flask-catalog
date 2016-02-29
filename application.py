@@ -129,7 +129,7 @@ def add_item():
                             description = description,
                             picture = filename,
                             category_id = request.form['category_id'],
-                            user_id = get_user_id(login_session['username']))
+                            user_id = login_session['user_id'])
             db_session.add(new_item)
             db_session.commit()
             return redirect(url_for('list_categories'))
@@ -249,6 +249,11 @@ def github_login():
     data = result.json()
     login_session['username'] = data['login']
     login_session['fullname'] = data['name']
+    # Check if user exists & create if not found
+    user_id = get_user_id(login_session['username'])
+    if user_id is None:
+        user_id = create_user(login_session)
+    login_session['user_id'] = user_id
     #
     print "User logged in: %s" % login_session.get('username')
     #
@@ -273,6 +278,7 @@ def logout():
     login_session.pop('state', None)
     login_session.pop('username', None)
     login_session.pop('fullname', None)
+    login_session.pop('user_id', None)
     #
     print "User logged in: %s" % login_session.get('username')
     #
@@ -280,9 +286,22 @@ def logout():
 
 
 # User Helper functions
-def get_user_id(username):
-    user = db_session.query(User).filter_by(username = username).one()
+def create_user(login_session):
+    user = User(username = login_session['username'],
+                fullname = login_session['fullname'])
+    db_session.add(user)
+    db_session.commit()
+    user = db_session.query(User).\
+            filter_by(username = login_session['username']).one()
     return user.id
+
+
+def get_user_id(username):
+    try:
+        user = db_session.query(User).filter_by(username = username).one()
+        return user.id
+    except:
+        return None
 
 
 # Main routine
