@@ -105,97 +105,110 @@ def show_image(filename):
 # Add item
 @app.route('/catalog/add', methods=['GET', 'POST'])
 def add_item():
-    if 'username' in login_session:
-        if request.method == 'GET':
-            categories = db_session.query(Category).all()
-            return render_template('add.html', categories = categories,
-                                    login = login_session.get('username'))
-        elif request.method == 'POST':
-            image = request.files['image']
-            # Save image if chosen
-            if image:
-                filename = secure_filename(image.filename).lower()
-                image.save(os.path.join(IMAGES_DIRECTORY, filename))
-            else:
-                filename = None
-            # Description validation
-            if request.form['description'] == '':
-                description = None
-            else:
-                description = request.form['description']
-            # Name must be non-empty
-            if request.form['name'] != '':
-                new_item = Item(name = request.form['name'],
-                            description = description,
-                            picture = filename,
-                            category_id = request.form['category_id'],
-                            user_id = login_session['user_id'])
-            db_session.add(new_item)
-            db_session.commit()
-            return redirect(url_for('list_categories'))
-    else:
+    if 'username' not in login_session:
         return redirect(url_for('login'))
+    if request.method == 'GET':
+        categories = db_session.query(Category).all()
+        return render_template('add.html', categories = categories,
+                                login = login_session.get('username'))
+    elif request.method == 'POST':
+        image = request.files['image']
+        # Save image if chosen
+        if image:
+            filename = secure_filename(image.filename).lower()
+            image.save(os.path.join(IMAGES_DIRECTORY, filename))
+        else:
+            filename = None
+        # Description validation
+        if request.form['description'] == '':
+            description = None
+        else:
+            description = request.form['description']
+        # Name must be non-empty
+        if request.form['name'] != '':
+            new_item = Item(name = request.form['name'],
+                        description = description,
+                        picture = filename,
+                        category_id = request.form['category_id'],
+                        user_id = login_session['user_id'])
+        db_session.add(new_item)
+        db_session.commit()
+        return redirect(url_for('list_categories'))
 
 
 # Edit item
 @app.route('/catalog/<category_name>/<item_name>/edit',
             methods=['GET', 'POST'])
 def edit_item(category_name, item_name):
-    if 'username' in login_session:
-        if request.method == 'GET':
-            categories = db_session.query(Category).all()
-            category = db_session.query(Category).\
-                        filter_by(name = category_name).one()
-            item = db_session.query(Item).filter_by(name = item_name).one()
-            return render_template('edit.html', categories = categories,
-                                    category_id = category.id,
-                                    item = item,
-                                    login = login_session.get('username'))
-        elif request.method == 'POST':
-            item = db_session.query(Item).filter_by(name = item_name).one()
-            image = request.files['image']
-            # Save updated image
-            if image:
-                filename = secure_filename(image.filename).lower()
-                image.save(os.path.join(IMAGES_DIRECTORY, filename))
-                item.picture = filename
-            # Name must be non-empty
-            if request.form['name'] != '':
-                item.name = request.form['name']
-            # Description validation
-            if request.form['description'] == '':
-                item.description = None
-            else:
-                item.description = request.form['description']
-            item.category_id = request.form['category_id']
-            db_session.add(item)
-            db_session.commit()
-            category = db_session.query(Category).\
-                        filter_by(id = request.form['category_id']).one()
-            return redirect(url_for('list_items',
-                                    category_name = category.name))
-    else:
+    if 'username' not in login_session:
         return redirect(url_for('login'))
+    item = db_session.query(Item).filter_by(name = item_name).one()
+    # If current user is not item creator, forbid item's edition
+    if item.user_id != login_session['user_id']:
+        return """<script>
+                    function myFunction() {
+                        alert('You are not authorized to edit this item.');
+                        window.location.replace('%s');
+                    }
+                </script>
+                <body onload='myFunction()''>""" % url_for('list_categories')
+    if request.method == 'GET':
+        categories = db_session.query(Category).all()
+        category = db_session.query(Category).\
+                    filter_by(name = category_name).one()
+        return render_template('edit.html', categories = categories,
+                                category_id = category.id,
+                                item = item,
+                                login = login_session.get('username'))
+    elif request.method == 'POST':
+        image = request.files['image']
+        # Save updated image
+        if image:
+            filename = secure_filename(image.filename).lower()
+            image.save(os.path.join(IMAGES_DIRECTORY, filename))
+            item.picture = filename
+        # Name must be non-empty
+        if request.form['name'] != '':
+            item.name = request.form['name']
+        # Description validation
+        if request.form['description'] == '':
+            item.description = None
+        else:
+            item.description = request.form['description']
+        item.category_id = request.form['category_id']
+        db_session.add(item)
+        db_session.commit()
+        category = db_session.query(Category).\
+                    filter_by(id = request.form['category_id']).one()
+        return redirect(url_for('list_items',
+                                category_name = category.name))
 
 
 # Delete item
 @app.route('/catalog/<category_name>/<item_name>/delete',
             methods=['GET', 'POST'])
 def delete_item(item_name, category_name):
-    if 'username' in login_session:
-        if request.method == 'GET':
-            item = db_session.query(Item).filter_by(name = item_name).one()
-            return render_template('delete.html', item = item,
-                                    login = login_session.get('username'))
-        elif request.method == 'POST':
-            item = db_session.query(Item).filter_by(name = item_name).one()
-            # Delete image file
-            os.remove(os.path.join(IMAGES_DIRECTORY, item.picture))
-            db_session.delete(item)
-            db_session.commit()
-            return redirect(url_for('list_categories'))
-    else:
+    if 'username' not in login_session:
         return redirect(url_for('login'))
+    item = db_session.query(Item).filter_by(name = item_name).one()
+    # If current user is not item creator, forbid item's deletion
+    if item.user_id != login_session['user_id']:
+        return """<script>
+                    function myFunction() {
+                        alert('You are not authorized to delete this item.');
+                        window.location.replace('%s');
+                    }
+                </script>
+                <body onload='myFunction()''>""" % url_for('list_categories')
+    if request.method == 'GET':
+        return render_template('delete.html', item = item,
+                                login = login_session.get('username'))
+    elif request.method == 'POST':
+        # Delete image file
+        os.remove(os.path.join(IMAGES_DIRECTORY, item.picture))
+        db_session.delete(item)
+        db_session.commit()
+        return redirect(url_for('list_categories'))
 
 
 # Show login page
@@ -302,6 +315,11 @@ def get_user_id(username):
         return user.id
     except:
         return None
+
+
+def get_user_info(user_id):
+    user = session.query(User).filter_by(id = user_id).one()
+    return user
 
 
 # Main routine
