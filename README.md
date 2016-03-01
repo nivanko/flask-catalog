@@ -30,9 +30,9 @@ $ python setup.py
 Setup script does not delete existing information. You may delete information
 manually, if you want to run setup script again:
 ```bash
-$ psql catalog -c "delete from users"
-$ psql catalog -c "delete from category"
 $ psql catalog -c "delete from item"
+$ psql catalog -c "delete from category"
+$ psql catalog -c "delete from users"
 ```
 
 Usage

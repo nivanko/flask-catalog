@@ -91,18 +91,22 @@ if __name__ == '__main__':
     user1 = User(username = "nivanko", fullname = "Nikolay Ivanko")
     session.add(user1)
 
+    category1 = session.query(Category).filter_by(name = "Backpacks").one()
     user1 = session.query(User).filter_by(username = "nivanko").one()
 
-    item1 = Item(name = "Hiking Pack", category_id = 1, user_id = user1.id)
+    item1 = Item(name = "Hiking Pack", category_id = category1.id,
+                user_id = user1.id)
     session.add(item1)
-    item2 = Item(name = "Day Pack", category_id = 1, picture = "daypack.jpg",
+
+    item2 = Item(name = "Day Pack", category_id = category1.id,
+                picture = "daypack.jpg",
                 description = ("A daypack is a smaller, frameless backpack "
                 "that can hold enough contents for a day hike, or a day's "
                 "worth of other activities."),
                 user_id = user1.id)
+    session.add(item2)
     # Put image file to its place
     shutil.copy(os.path.join(SAMPLES_DIRECTORY, "daypack.jpg"),
                 IMAGES_DIRECTORY)
 
-    session.add(item2)
     session.commit()
