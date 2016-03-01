@@ -42,8 +42,13 @@
           <p><input type=text maxlength="50" name="name"
             value="{{ item.name }}">
         <p>Description:
-          <p><input type=text maxlength="250" name="description"
-            value="{{ item.description }}">
+        {% if item.description == None %}
+        <p><input type=text maxlength="250" name="description"
+          value="">
+        {% else %}
+        <p><input type=text maxlength="250" name="description"
+          value="{{ item.description }}">
+        {% endif %}
         <p>Category:
               <p><select name="category_id" size="1">
                 {% for c in categories %}
