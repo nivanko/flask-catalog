@@ -105,6 +105,7 @@ def show_image(filename):
 # Add item
 @app.route('/catalog/add', methods=['GET', 'POST'])
 def add_item():
+    # Check if user logged in
     if 'username' not in login_session:
         return redirect(url_for('login'))
     if request.method == 'GET':
@@ -140,6 +141,7 @@ def add_item():
 @app.route('/catalog/<category_name>/<item_name>/edit',
             methods=['GET', 'POST'])
 def edit_item(category_name, item_name):
+    # Check if user logged in
     if 'username' not in login_session:
         return redirect(url_for('login'))
     item = db_session.query(Item).filter_by(name = item_name).one()
@@ -188,6 +190,7 @@ def edit_item(category_name, item_name):
 @app.route('/catalog/<category_name>/<item_name>/delete',
             methods=['GET', 'POST'])
 def delete_item(item_name, category_name):
+    # Check if user logged in
     if 'username' not in login_session:
         return redirect(url_for('login'))
     item = db_session.query(Item).filter_by(name = item_name).one()
