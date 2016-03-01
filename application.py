@@ -114,7 +114,7 @@ def add_item():
     elif request.method == 'POST':
         image = request.files['image']
         # Save image if chosen
-        if image:
+        if check_image(image):
             filename = secure_filename(image.filename).lower()
             image.save(os.path.join(IMAGES_DIRECTORY, filename))
         else:
@@ -163,7 +163,7 @@ def edit_item(category_name, item_name):
     elif request.method == 'POST':
         image = request.files['image']
         # Save updated image
-        if image:
+        if check_image(image):
             filename = secure_filename(image.filename).lower()
             image.save(os.path.join(IMAGES_DIRECTORY, filename))
             item.picture = filename
@@ -320,6 +320,36 @@ def get_user_id(username):
 def get_user_info(user_id):
     user = session.query(User).filter_by(id = user_id).one()
     return user
+
+
+# Check uploaded image
+def check_image(image):
+    if image:
+        # Read first 10 bytes
+        file_signature = image.read(10)
+        # Rewind file to begin
+        image.seek(0)
+        file_extension = os.path.splitext(image.filename)[1].lower()
+        print file_signature[:6]
+        # Check conformity between file extension and file signature
+        # JPEG image format
+        if file_extension == '.jpg' and file_signature[-4:] == 'JFIF':
+            return True
+        elif file_extension == '.jpeg' and file_signature[-4:] == 'JFIF':
+            return True
+        # PNG image format
+        elif file_extension == '.png' and file_signature[1:4] == 'PNG':
+            return True
+        # GIF image format
+        elif file_extension == '.gif' and file_signature[:6] == 'GIF87a':
+            return True
+        elif file_extension == '.gif' and file_signature[:6] == 'GIF89a':
+            return True
+        # We do not support other image formats
+        else:
+            return False
+    else:
+        return False
 
 
 # Main routine
