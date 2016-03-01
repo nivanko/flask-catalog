@@ -47,6 +47,8 @@ into "Backpacks" category. In the **sample_data** directory, you may find
 **catalog.csv** - semicolon-delimited list of items (it can be opened with any
 spreadsheet program), and some image files. You must be logged in to add, edit
 and delete items. You cannot manipulate items, created by other users.
+
 ---
+
 ***Disclaimer:*** All images, and some item's descriptions are taken from
 [Wikipedia](http://wikipedia.org)
