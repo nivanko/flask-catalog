@@ -14,7 +14,15 @@
         <h1>The Call of the Wild</h1>
         <h3 style="color: Black">Camping and Hiking Items Catalog</h3>
       </td>
-
+      <td align="left">
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+            <strong> {{ message }} </strong>
+        {% endfor %}
+      {% endif %}
+      {% endwith %}
+      </td>
       <td align="right">
         {% if login is none %}
         <form action="{{ url_for('login')}}">

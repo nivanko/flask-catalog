@@ -271,7 +271,7 @@ def github_login():
         user_id = create_user(login_session)
     login_session['user_id'] = user_id
     #
-    print "User logged in: %s" % login_session.get('username')
+    flash("Welcome, %s!" % login_session['fullname'])
     #
     return redirect(url_for('list_categories'))
 
@@ -289,14 +289,14 @@ def logout():
     #                 json.dumps("Error destroying user session"), 401)
     #     response.headers['Content-Type'] = 'application/json'
     #     return response
+    #
+    flash("%s logged out!" % login_session['fullname'])
     # Remove the user data from the session if its there
     login_session.pop('access_token', None)
     login_session.pop('state', None)
     login_session.pop('username', None)
     login_session.pop('fullname', None)
     login_session.pop('user_id', None)
-    #
-    print "User logged in: %s" % login_session.get('username')
     #
     return redirect(url_for('list_categories'))
 
