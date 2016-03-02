@@ -24,6 +24,7 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 db_session = DBSession()
 
+
 # JSON API endpoint
 @app.route('/catalog.json')
 def catalog_json():
@@ -31,7 +32,7 @@ def catalog_json():
     list_of_categories = []
     for c in categories:
         category = c.serialize
-        items = db_session.query(Item).filter_by(category_id = c.id).all()
+        items = db_session.query(Item).filter_by(category_id=c.id).all()
         if len(items) > 0:
             category['Item'] = []
             for i in items:
@@ -39,8 +40,8 @@ def catalog_json():
                 if item.get('description') is None:
                     item.pop('description')
                 if item.get('picture') is not None:
-                    item['picture'] = url_for('show_image', _external = True,
-                                        filename = item['picture'])
+                    item['picture'] = url_for('show_image', _external=True,
+                                              filename=item['picture'])
                 else:
                     item.pop('picture')
                 category['Item'].append(item)
@@ -55,11 +56,11 @@ def catalog_xml():
     list_of_categories = []
     for c in categories:
         category = c.serialize
-        items = db_session.query(Item).filter_by(category_id = c.id).all()
+        items = db_session.query(Item).filter_by(category_id=c.id).all()
         if len(items) > 0:
             category['Item'] = [i.serialize for i in items]
         list_of_categories.append(category)
-    xml_page = render_template('catalog.xml', categories = list_of_categories)
+    xml_page = render_template('catalog.xml', categories=list_of_categories)
     response = make_response(xml_page)
     response.headers["Content-Type"] = "application/xml"
     return response
@@ -71,29 +72,29 @@ def catalog_xml():
 def list_categories():
     categories = db_session.query(Category).all()
     last_items = db_session.query(Item).order_by(desc(Item.id)).limit(10)
-    return render_template('categories.html', categories = categories,
-                            items = last_items,
-                            login = login_session.get('username'))
+    return render_template('categories.html', categories=categories,
+                           items=last_items,
+                           login=login_session.get('username'))
 
 
 # List items in category
 @app.route('/catalog/<category_name>')
 def list_items(category_name):
     categories = db_session.query(Category).all()
-    category = db_session.query(Category).filter_by(name = category_name).one()
-    items = db_session.query(Item).filter_by(category_id = category.id).all()
-    return render_template('items.html', categories = categories,
-                            name = category.name, count = len(items),
-                            items = items,
-                            login = login_session.get('username'))
+    category = db_session.query(Category).filter_by(name=category_name).one()
+    items = db_session.query(Item).filter_by(category_id=category.id).all()
+    return render_template('items.html', categories=categories,
+                           name=category.name, count=len(items),
+                           items=items,
+                           login=login_session.get('username'))
 
 
 # View item
 @app.route('/catalog/<category_name>/<item_name>')
 def show_item(category_name, item_name):
-    item = db_session.query(Item).filter_by(name = item_name).one()
-    return render_template('show.html', item = item,
-                            login = login_session.get('username'))
+    item = db_session.query(Item).filter_by(name=item_name).one()
+    return render_template('show.html', item=item,
+                           login=login_session.get('username'))
 
 
 # Show item image
@@ -110,8 +111,8 @@ def add_item():
         return redirect(url_for('login'))
     if request.method == 'GET':
         categories = db_session.query(Category).all()
-        return render_template('add.html', categories = categories,
-                                login = login_session.get('username'))
+        return render_template('add.html', categories=categories,
+                               login=login_session.get('username'))
     elif request.method == 'POST':
         image = request.files['image']
         # Save image if chosen
@@ -127,11 +128,11 @@ def add_item():
             description = request.form['description']
         # Name must be non-empty
         if request.form['name'] != '':
-            new_item = Item(name = request.form['name'],
-                        description = description,
-                        picture = filename,
-                        category_id = request.form['category_id'],
-                        user_id = login_session['user_id'])
+            new_item = Item(name=request.form['name'],
+                            description=description,
+                            picture=filename,
+                            category_id=request.form['category_id'],
+                            user_id=login_session['user_id'])
         db_session.add(new_item)
         db_session.commit()
         return redirect(url_for('list_categories'))
@@ -139,12 +140,12 @@ def add_item():
 
 # Edit item
 @app.route('/catalog/<category_name>/<item_name>/edit',
-            methods=['GET', 'POST'])
+           methods=['GET', 'POST'])
 def edit_item(category_name, item_name):
     # Check if user logged in
     if 'username' not in login_session:
         return redirect(url_for('login'))
-    item = db_session.query(Item).filter_by(name = item_name).one()
+    item = db_session.query(Item).filter_by(name=item_name).one()
     # If current user is not item creator, forbid item's edition
     if item.user_id != login_session['user_id']:
         return """<script>
@@ -157,11 +158,11 @@ def edit_item(category_name, item_name):
     if request.method == 'GET':
         categories = db_session.query(Category).all()
         category = db_session.query(Category).\
-                    filter_by(name = category_name).one()
-        return render_template('edit.html', categories = categories,
-                                category_id = category.id,
-                                item = item,
-                                login = login_session.get('username'))
+            filter_by(name=category_name).one()
+        return render_template('edit.html', categories=categories,
+                               category_id=category.id,
+                               item=item,
+                               login=login_session.get('username'))
     elif request.method == 'POST':
         image = request.files['image']
         # Save updated image
@@ -181,19 +182,19 @@ def edit_item(category_name, item_name):
         db_session.add(item)
         db_session.commit()
         category = db_session.query(Category).\
-                    filter_by(id = request.form['category_id']).one()
+            filter_by(id=request.form['category_id']).one()
         return redirect(url_for('list_items',
-                                category_name = category.name))
+                                category_name=category.name))
 
 
 # Delete item
 @app.route('/catalog/<category_name>/<item_name>/delete',
-            methods=['GET', 'POST'])
+           methods=['GET', 'POST'])
 def delete_item(item_name, category_name):
     # Check if user logged in
     if 'username' not in login_session:
         return redirect(url_for('login'))
-    item = db_session.query(Item).filter_by(name = item_name).one()
+    item = db_session.query(Item).filter_by(name=item_name).one()
     # If current user is not item creator, forbid item's deletion
     if item.user_id != login_session['user_id']:
         return """<script>
@@ -204,8 +205,8 @@ def delete_item(item_name, category_name):
                 </script>
                 <body onload='myFunction()''>""" % url_for('list_categories')
     if request.method == 'GET':
-        return render_template('delete.html', item = item,
-                                login = login_session.get('username'))
+        return render_template('delete.html', item=item,
+                               login=login_session.get('username'))
     elif request.method == 'POST':
         # Delete image file
         os.remove(os.path.join(IMAGES_DIRECTORY, item.picture))
@@ -218,10 +219,10 @@ def delete_item(item_name, category_name):
 @app.route('/login')
 def login():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                for x in xrange(32))
+                    for x in xrange(32))
     login_session['state'] = state
-    return render_template('login.html', client_id = CLIENT_ID, state = state,
-                            login = login_session.get('username'))
+    return render_template('login.html', client_id=CLIENT_ID, state=state,
+                           login=login_session.get('username'))
 
 
 # Process GitHub login
@@ -244,9 +245,9 @@ def github_login():
     # Get access token
     url = 'https://github.com/login/oauth/access_token'
     headers = {'Accept': 'application/json'}
-    params = { 'client_id' : CLIENT_ID, 'client_secret' : CLIENT_SECRET,
-                'code' : code, 'state' : state }
-    result = requests.post(url, data = params, headers = headers)
+    params = {'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET,
+              'code': code, 'state': state}
+    result = requests.post(url, data=params, headers=headers)
     data = result.json()
     # Check errors for the access token request
     error = data.get('error')
@@ -261,7 +262,7 @@ def github_login():
     url = 'https://api.github.com/user'
     token_param = 'token %s' % login_session['access_token']
     headers = {'Authorization': token_param, 'Accept': 'application/json'}
-    result = requests.get(url, headers = headers)
+    result = requests.get(url, headers=headers)
     data = result.json()
     login_session['username'] = data['login']
     login_session['fullname'] = data['name']
@@ -303,25 +304,25 @@ def logout():
 
 # User Helper functions
 def create_user(login_session):
-    user = User(username = login_session['username'],
-                fullname = login_session['fullname'])
+    user = User(username=login_session['username'],
+                fullname=login_session['fullname'])
     db_session.add(user)
     db_session.commit()
     user = db_session.query(User).\
-            filter_by(username = login_session['username']).one()
+        filter_by(username=login_session['username']).one()
     return user.id
 
 
 def get_user_id(username):
     try:
-        user = db_session.query(User).filter_by(username = username).one()
+        user = db_session.query(User).filter_by(username=username).one()
         return user.id
     except:
         return None
 
 
 def get_user_info(user_id):
-    user = session.query(User).filter_by(id = user_id).one()
+    user = session.query(User).filter_by(id=user_id).one()
     return user
 
 
