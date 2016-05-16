@@ -236,7 +236,6 @@ def github_login():
     code = request.args.get('code')
     # Check errors for the authorization request
     error = request.args.get('error')
-    print "Authorization request error is: %s" % error
     if error is not None:
         response = make_response(json.dumps(
                     request.args.get('error_description')), 401)
@@ -251,7 +250,6 @@ def github_login():
     data = result.json()
     # Check errors for the access token request
     error = data.get('error')
-    print "Access token request error is: %s" % error
     if error is not None:
         response = make_response(json.dumps(
                     data.get('error_description')), 401)
@@ -334,7 +332,6 @@ def check_image(image):
         # Rewind file to begin
         image.seek(0)
         file_extension = os.path.splitext(image.filename)[1].lower()
-        print file_signature[:6]
         # Check conformity between file extension and file signature
         # JPEG image format
         if file_extension == '.jpg' and file_signature[-4:] == 'JFIF':
